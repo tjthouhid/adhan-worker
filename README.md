@@ -2,14 +2,15 @@
 
 Play the adhan on your Amazon Echo at every prayer time, automatically, using your own mosque's timetable. No server to run, no hardware, and it fits inside free plans.
 
-```
-Cloudflare Worker (runs every minute)
-   │  gets today's times: your mosque's timetable (my-masjid.com)
-   │                      or calculated times (Aladhan API) as a fallback
-   ▼
-Voice Monkey (Routine Trigger)
-   ▼
-Alexa routine  →  "use beautiful adhan to play an amazing adhan"  →  your Echo
+```mermaid
+flowchart LR
+    CRON["⏰ Cloudflare cron<br/>every minute"] --> W["☁️ Cloudflare Worker"]
+    MM["🕌 my-masjid.com<br/>mosque timetable"] -. "today's times" .-> W
+    AL["🧮 Aladhan API<br/>fallback"] -. "if mosque fails" .-> W
+    W -- "prayer time now?<br/>trigger" --> VM["🐒 Voice Monkey<br/>Routine Trigger"]
+    VM --> R["⚙️ Alexa routine<br/>volume + skill phrase"]
+    R --> S["📿 Beautiful Azan skill"]
+    S --> E["🔊 Your Echo<br/>plays the adhan"]
 ```
 
 ## Features
@@ -166,6 +167,61 @@ npx wrangler tail
 
 - **`scheduled`** runs every minute. It gets today's times, using the in-memory cache first, then my-masjid.com, then Aladhan. If the current `HH:MM` in your timezone matches a prayer time, it calls Voice Monkey with the right trigger.
 - **`fetch`** serves the times page and the `?test=1` link.
+
+### Every minute
+
+```mermaid
+flowchart TD
+    A["⏰ Cron fires"] --> B{"Today's times<br/>in memory?"}
+    B -- yes --> F
+    B -- no --> C{"MASJID_GUID set?"}
+    C -- yes --> D["Fetch my-masjid.com<br/>cached 6h at the edge"]
+    D -- ok --> D2{"Friday?"}
+    D2 -- yes --> D3["Dhuhr = first Jumu'ah jamaah"]
+    D2 -- no --> F
+    D3 --> F
+    D -- fails --> E["Fetch Aladhan<br/>calculated times + TUNE"]
+    C -- no --> E
+    E --> F{"Now HH:MM equals<br/>a prayer time?"}
+    F -- no --> Z["Do nothing"]
+    F -- yes --> G{"Fajr and<br/>FAJR_DEVICE set?"}
+    G -- yes --> H["Trigger FAJR_DEVICE"]
+    G -- no --> I["Trigger DEVICE"]
+    H --> J["🔊 Echo plays the adhan"]
+    I --> J
+```
+
+### At prayer time
+
+```mermaid
+sequenceDiagram
+    participant C as Cloudflare cron
+    participant W as Worker
+    participant M as my-masjid.com
+    participant V as Voice Monkey
+    participant A as Alexa routine
+    participant E as Echo
+
+    C->>W: scheduled() at 16:08
+    W->>M: today's timetable (cached)
+    M-->>W: Maghrib 16:08
+    W->>V: trigger device "adhan-xxxxx"
+    V->>A: start routine
+    A->>E: set volume 8
+    A->>E: "use beautiful adhan to play an amazing adhan"
+    E-->>E: 🔊 adhan plays
+```
+
+### Project files
+
+```
+adhan-worker/
+├── src/
+│   └── index.js      # the Worker: timetable fetch, Jumu'ah, Voice Monkey trigger, times page
+├── wrangler.toml     # your settings: mosque ID, location, device IDs, cron
+├── README.md
+└── LICENSE
+```
 
 ## License
 
