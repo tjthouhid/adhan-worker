@@ -9,7 +9,7 @@ Cloudflare Worker (runs every minute)
    ▼
 Voice Monkey (Routine Trigger)
    ▼
-Alexa routine  →  "ask Beautiful Adhan to play an amazing Adhan"  →  your Echo
+Alexa routine  →  "use beautiful adhan to play an amazing adhan"  →  your Echo
 ```
 
 ## Features
@@ -46,22 +46,33 @@ cd adhan-worker
 
 ### 3. Alexa routine
 
-First, find the phrase that works for your skill. Say it to your Echo, for example:
+In the Alexa app, go to **More → Routines → +**. This is a routine that works:
 
-> "Alexa, ask Beautiful Adhan to play an amazing Adhan"
+```
+Adhan                                   [Enabled]
 
-The skill's page in the Alexa app (**Start By Saying**) lists the phrases it understands. Use one of those word for word.
+WHEN
+  Alexa Voice Monkey v3: VM Routines, adhan
+  Any time
 
-Then, in the Alexa app, go to **More → Routines → +** and set up:
+ALEXA WILL
+  1. Set volume to 8
+  2. "use beautiful adhan to play an amazing adhan"
+```
 
-| Setting | Value |
+To build it:
+
+| Step | What to pick |
 |---|---|
-| When this happens | **Smart Home →** your Voice Monkey trigger |
-| Action | **Customised →** your phrase without "Alexa", for example `ask Beautiful Adhan to play an amazing Adhan` |
-| *(Optional)* Action | **Device settings → Volume**, placed before the adhan |
-| From / Alexa will respond from | **Your Echo.** Don't leave it on "the device you speak to". |
+| **When this happens** | **Smart Home → Alexa Voice Monkey v3: VM Routines →** your trigger, for example `adhan` |
+| Time | **Any time** (the default) |
+| Action 1 *(optional)* | **Device settings → Volume →** for example `8` |
+| Action 2 | **Customised →** type `use beautiful adhan to play an amazing adhan` |
+| Alexa will respond from | **Your Echo.** Don't leave it on "the device you speak to". |
 
-Make a second routine for Fajr if you created a Fajr trigger.
+For Fajr, make a second routine the same way, with your Fajr trigger and a lower volume if you like.
+
+If you use a different adhan skill, use one of the phrases on its page in the Alexa app (**Start By Saying**), without "Alexa". Say it to your Echo first to check it plays.
 
 > Use **Customised**, not **Skills**. The Skills action only opens the skill, and it then waits for you to answer a question.
 
@@ -139,7 +150,7 @@ npx wrangler tail
 | `Forbidden` | Wrong key in the test link. Use only letters and numbers: `%`, `&`, `#`, `?` and `+` break URLs. To set a new one, run `npx wrangler secret put TEST_KEY`. |
 | `Failed to trigger … 401` | Wrong Voice Monkey token. Run `npx wrangler secret put VM_TOKEN` again. |
 | `Failed to trigger … 404` or "device not found" | `DEVICE` / `FAJR_DEVICE` must be the exact **Device ID**, with its suffix, e.g. `adhan-ab12c`. |
-| Alexa says *"To control a video device…"* | The routine's phrase isn't one the skill understands. Use the exact phrase from the skill's page, and set **From** to your Echo. |
+| Alexa says *"To control a video device…"* | Alexa didn't send the phrase to the skill. Use exactly `use beautiful adhan to play an amazing adhan`, and set **From** to your Echo. |
 | Alexa opens the skill and asks a question | You used the **Skills** action. Use **Customised** with the full phrase instead. |
 | Times are a few minutes off | Set `MASJID_GUID` to your mosque's ID, or adjust `TUNE` for the fallback. |
 
