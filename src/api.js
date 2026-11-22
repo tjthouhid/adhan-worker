@@ -4,6 +4,7 @@
 import { parseMosques, publicMosque } from "./mosques.js";
 import { parseTimesQuery } from "./validate.js";
 import { buildMosqueDays, todayInZone, secondsToMidnight } from "./days.js";
+import { fetchLocationDays } from "./aladhan.js";
 
 export function json(body, status = 200, maxAge = 3600) {
   return new Response(JSON.stringify(body), {
@@ -61,6 +62,28 @@ async function mosqueTimes(q, env, now) {
   );
 }
 
+async function locationTimes(q, fetchFn, now) {
+  let result;
+  try {
+    result = await fetchLocationDays(q, q.days, fetchFn, now);
+  } catch (err) {
+    console.log(`Location times failed: ${err.message}`);
+    return error("upstream unavailable", 503);
+  }
+  return json(
+    {
+      source: "aladhan",
+      mosque: null,
+      location: { lat: q.lat, lng: q.lng, method: q.method, school: q.school },
+      timezone: result.timezone,
+      generatedAt: now.toISOString(),
+      days: result.days,
+    },
+    200,
+    maxAgeFor(result.timezone, now)
+  );
+}
+
 export async function handleTimes(request, env, { cache, fetchFn, now }) {
   const url = new URL(request.url);
   const q = parseTimesQuery(url.searchParams, parseMosques(env.MOSQUES));
@@ -70,7 +93,7 @@ export async function handleTimes(request, env, { cache, fetchFn, now }) {
   const hit = await cache.match(key);
   if (hit) return hit;
 
-  const res = q.kind === "mosque" ? await mosqueTimes(q, env, now) : error("not implemented", 501);
+  const res = q.kind === "mosque" ? await mosqueTimes(q, env, now) : await locationTimes(q, fetchFn, now);
   if (res.status === 200) await cache.put(key, res.clone());
   return res;
 }
