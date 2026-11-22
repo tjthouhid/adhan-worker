@@ -4,6 +4,7 @@
 // Voice Monkey Routine Trigger, which runs the Alexa routine that plays the adhan.
 
 import { refreshOne, myMasjidUrl } from "./refresh.js";
+import { handleMosques, handleTimes } from "./api.js";
 
 const PRAYERS = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
 
@@ -142,6 +143,13 @@ export default {
   // Add ?test=1&key=YOUR_TEST_KEY to fire the adhan now (uses 1 Voice Monkey request).
   async fetch(request, env) {
     const url = new URL(request.url);
+
+    // App API (served from KV / cache; never calls my-masjid.com)
+    if (url.pathname === "/mosques.json") return handleMosques(env);
+    if (url.pathname === "/times.json") {
+      return handleTimes(request, env, { cache: caches.default, fetchFn: fetch, now: new Date() });
+    }
+
     const { date, hhmm, isFriday } = nowInZone(env.TIMEZONE);
 
     if (url.searchParams.get("test") === "1") {
