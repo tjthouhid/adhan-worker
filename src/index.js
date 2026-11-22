@@ -5,6 +5,7 @@
 
 import { refreshOne, myMasjidUrl } from "./refresh.js";
 import { handleMosques, handleTimes } from "./api.js";
+import { kvMosqueTimings } from "./alexa-kv.js";
 
 const PRAYERS = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
 
@@ -76,7 +77,18 @@ async function getTimings(env, date, isFriday) {
       cache = { date, timings, source: "mosque" };
       return timings;
     } catch (err) {
-      console.log(`Mosque timings failed, using Aladhan: ${err.message}`);
+      console.log(`Mosque timings failed: ${err.message}`);
+      // Backup: the app API's daily KV copy of the same mosque, if it's listed in MOSQUES
+      try {
+        const timings = await kvMosqueTimings(env, date, isFriday);
+        if (timings) {
+          cache = { date, timings, source: "mosque-kv" };
+          return timings;
+        }
+      } catch (kvErr) {
+        console.log(`KV mosque timings failed: ${kvErr.message}`);
+      }
+      console.log("Using Aladhan");
     }
   }
 
@@ -171,7 +183,7 @@ export default {
 
     const timings = await getTimings(env, date, isFriday);
     const label = (p) =>
-      p === "Dhuhr" && isFriday && cache.source === "mosque" ? "Jumu'ah" : p;
+      p === "Dhuhr" && isFriday && cache.source?.startsWith("mosque") ? "Jumu'ah" : p;
     const lines = PRAYERS.map((p) => `${label(p).padEnd(8)} ${timings[p]}`).join("\n");
     return new Response(
       `Prayer times for ${date} (${env.TIMEZONE})\nSource: ${cache.source}\nNow: ${hhmm}\n\n${lines}\n`,

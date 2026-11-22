@@ -255,15 +255,96 @@ sequenceDiagram
 ```
 adhan-worker/
 ├── src/
-│   └── index.js      # the Worker: timetable fetch, Jumu'ah, Voice Monkey trigger, times page
-├── wrangler.toml     # your settings: mosque ID, location, device IDs, cron
+│   ├── index.js      # the Worker: Alexa cron, Jumu'ah, Voice Monkey trigger, times page, routing
+│   ├── api.js        # /mosques.json and /times.json
+│   ├── refresh.js    # daily mosque timetable refresh into KV (one mosque per cron run)
+│   ├── aladhan.js    # location-based times from the Aladhan calendar
+│   ├── alexa-kv.js   # Alexa backup: the KV copy, if the mosque fetch fails
+│   ├── days.js       # timezone-aware dates and building each day's times
+│   ├── timetable.js  # trims a my-masjid timetable to what's stored
+│   ├── mosques.js    # the MOSQUES list
+│   └── validate.js   # /times.json query checks
+├── test/             # unit tests (npm test)
+├── wrangler.toml     # your settings: mosque ID, location, device IDs, mosque list, cron
 ├── README.md
 └── LICENSE
 ```
 
+## Times API for apps
+
+The Worker also serves prayer times as JSON, for phone apps. Phones only ever talk to your Worker: my-masjid.com is called by the cron about **once a day per mosque**, however many people use the app, and every request is served from Cloudflare KV and cache.
+
+### Endpoints
+
+| URL | Returns |
+|---|---|
+| `/mosques.json` | The mosques you list in `MOSQUES` (id, name, city, timezone). Never their my-masjid IDs. |
+| `/times.json?masjid=duwt` | That mosque's times |
+| `/times.json?lat=51.54&lng=0.15` | Calculated times for a location (Aladhan). Optional: `method` (default `15`), `school` (`1` Hanafi, default, or `0`) |
+
+Add `&days=N` for 1 to 14 days (default 7). Example response:
+
+```json
+{
+  "source": "mosque",
+  "mosque": { "id": "duwt", "name": "Dagenham Ummah Welfare Trust" },
+  "location": null,
+  "timezone": "Europe/London",
+  "generatedAt": "2026-11-22T19:40:12.008Z",
+  "days": [
+    {
+      "date": "2026-11-22",
+      "weekday": "Sun",
+      "fajr": "2026-11-22T05:44:00+00:00",
+      "sunrise": "2026-11-22T07:29:00+00:00",
+      "dhuhr": "2026-11-22T11:51:00+00:00",
+      "asr": "2026-11-22T14:15:00+00:00",
+      "maghrib": "2026-11-22T16:05:00+00:00",
+      "isha": "2026-11-22T17:40:00+00:00",
+      "jumuah": null
+    }
+  ]
+}
+```
+
+- Every time includes its UTC offset, so BST and GMT are already handled.
+- On Fridays, mosque sources also give `jumuah`, the first Jumu'ah jamaah. `dhuhr` stays the normal Dhuhr time.
+- Days after 31 December reuse this year's timetable until my-masjid publishes the new year, and are marked `"estimated": true`.
+- Errors return JSON, for example `{"error": "timetable not ready"}` (503) in the first minutes after adding a mosque.
+
+### Set it up (once)
+
+1. Create the KV store:
+
+   ```bash
+   npx wrangler kv namespace create TIMES
+   ```
+
+2. In `wrangler.toml`, uncomment the `[[kv_namespaces]]` lines at the bottom and paste the `id` it printed.
+3. Run `npx wrangler deploy`. Within a few minutes the cron fills in each mosque, then `/times.json?masjid=...` works.
+
+### Add a mosque
+
+Add an entry to `MOSQUES` in `wrangler.toml` and deploy:
+
+```toml
+MOSQUES = '[{"id":"duwt","name":"Dagenham Ummah Welfare Trust","city":"Dagenham","guid":"7a036d31-b4ac-44f6-a68e-2dbb1f7a7994","timezone":"Europe/London"}, {"id":"another","name":"Another Masjid","city":"Ilford","guid":"THEIR-MY-MASJID-GUID","timezone":"Europe/London"}]'
+```
+
+The `guid` is found the same way as `MASJID_GUID` (see [Option A](#option-a-use-your-nearest-mosque)). The `id` is the short name apps use in URLs.
+
+The Alexa adhan doesn't depend on this. It keeps reading your mosque directly as before, and uses the KV copy only as a backup if my-masjid is unreachable.
+
+### Run the tests
+
+```bash
+npm install
+npm test
+```
+
 ## No Echo?
 
-An iPhone version is planned: an iOS Shortcut that sends a free notification at each prayer time, using the same mosque or location options. [Open an issue](https://github.com/tjthouhid/adhan-worker/issues) if you'd like it.
+An iPhone app is in progress: it uses this Times API and iOS alarms, so the full adhan rings even on silent. [Open an issue](https://github.com/tjthouhid/adhan-worker/issues) if you'd like to try it.
 
 ## License
 
