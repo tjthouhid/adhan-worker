@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
-import { trimTimetable } from "../src/timetable.js";
+import { trimTimetable, isCompleteYear } from "../src/timetable.js";
+import { fullYearMyMasjid } from "./helpers.js";
 
 const fixture = () =>
   JSON.parse(readFileSync(new URL("./fixtures/mymasjid-sample.json", import.meta.url)));
@@ -39,8 +40,33 @@ describe("trimTimetable", () => {
     expect(t.days[1].sunrise).toBeNull();
   });
 
+  it("rejects impossible clock times", () => {
+    const f = fixture();
+    f.model.salahTimings[2].asr = "25:61";
+    expect(() => trimTimetable(f)).toThrow("Bad timetable");
+  });
+
+  it("drops impossible Jumu'ah times", () => {
+    const f = fixture();
+    f.model.jumahSalahIqamahTimings = [{ time: "24:00" }, { time: "13:15" }];
+    expect(trimTimetable(f).jumuah).toEqual(["13:15"]);
+  });
+
   it("rejects an empty or missing timetable", () => {
     expect(() => trimTimetable({ model: { salahTimings: [] } })).toThrow("Bad timetable");
     expect(() => trimTimetable({})).toThrow("Bad timetable");
+  });
+});
+
+describe("isCompleteYear", () => {
+  it("accepts a full year, with or without 29 Feb", () => {
+    const days = trimTimetable(fullYearMyMasjid()).days;
+    expect(isCompleteYear(days)).toBe(true);
+    expect(isCompleteYear(days.filter((d) => !(d.month === 2 && d.day === 29)))).toBe(true);
+  });
+  it("rejects a partial year", () => {
+    expect(isCompleteYear(trimTimetable(fixture()).days)).toBe(false);
+    const days = trimTimetable(fullYearMyMasjid()).days.filter((d) => !(d.month === 7 && d.day === 4));
+    expect(isCompleteYear(days)).toBe(false);
   });
 });

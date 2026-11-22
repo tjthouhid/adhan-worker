@@ -2,7 +2,7 @@
 // This is the only code that calls my-masjid.com for the app API.
 
 import { parseMosques } from "./mosques.js";
-import { trimTimetable } from "./timetable.js";
+import { trimTimetable, isCompleteYear } from "./timetable.js";
 
 const HOUR = 3600_000;
 const FRESH_FOR = 24 * HOUR; // refresh each mosque once a day
@@ -33,6 +33,8 @@ export async function refreshOne(env, fetchFn, nowMs) {
     const res = await fetchFn(myMasjidUrl(mosque.guid));
     if (!res.ok) throw new Error(`my-masjid API error ${res.status}`);
     const { days, jumuah } = trimTimetable(await res.json());
+    // A partial response must never replace a good full-year copy.
+    if (!isCompleteYear(days)) throw new Error(`Bad timetable: only ${days.length} days`);
     await env.TIMES.put(
       `mosque:${mosque.id}`,
       JSON.stringify({ fetchedAt: nowMs, guid: mosque.guid, name: mosque.name, timezone: mosque.timezone, days, jumuah })

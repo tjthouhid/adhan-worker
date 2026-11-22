@@ -1,6 +1,16 @@
 // Trim a my-masjid.com GetMasjidTimings response to what we store in KV.
 
-const HHMM = /^\d{2}:\d{2}$/;
+const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+// True when every calendar day is present (29 Feb optional).
+export function isCompleteYear(days) {
+  const have = new Set(days.map((d) => `${d.month}-${d.day}`));
+  for (let t = Date.UTC(2027, 0, 1); t < Date.UTC(2028, 0, 1); t += 86400000) {
+    const d = new Date(t);
+    if (!have.has(`${d.getUTCMonth() + 1}-${d.getUTCDate()}`)) return false;
+  }
+  return true;
+}
 
 export function trimTimetable(json) {
   const rows = json?.model?.salahTimings;

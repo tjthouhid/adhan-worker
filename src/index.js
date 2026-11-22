@@ -129,19 +129,20 @@ async function triggerMonkey(env, device) {
 export default {
   // Runs every minute (cron in wrangler.toml)
   async scheduled(event, env, ctx) {
-    // App API: refresh at most one listed mosque into KV. Runs alongside the
-    // Alexa check below, so a refresh failure can never block the adhan.
-    if (env.TIMES) {
-      ctx.waitUntil(
-        refreshOne(env, fetch, Date.now()).catch((err) => console.log(`Refresh error: ${err.message}`))
-      );
-    }
-
     const { date, hhmm, isFriday } = nowInZone(env.TIMEZONE);
     const timings = await getTimings(env, date, isFriday);
 
     const prayer = PRAYERS.find((p) => timings[p] === hhmm);
-    if (!prayer) return;
+    if (!prayer) {
+      // App API: refresh at most one listed mosque into KV. Only on minutes
+      // with no adhan, so it can never use up the CPU time Alexa needs.
+      if (env.TIMES) {
+        ctx.waitUntil(
+          refreshOne(env, fetch, Date.now()).catch((err) => console.log(`Refresh error: ${err.message}`))
+        );
+      }
+      return;
+    }
 
     // Optional separate Fajr routine; falls back to the main one
     const device =

@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { pickNextToRefresh, refreshOne, myMasjidUrl } from "../src/refresh.js";
 import { parseMosques } from "../src/mosques.js";
+import { fullYearMyMasjid } from "./helpers.js";
 
 const H = 3600_000;
 const NOW = Date.UTC(2026, 10, 22, 3, 0);
@@ -26,7 +27,7 @@ function fakeKV(initial = {}) {
     },
   };
 }
-const okFetch = (body = fixtureText()) =>
+const okFetch = (body = JSON.stringify(fullYearMyMasjid())) =>
   vi.fn(async () => new Response(body, { status: 200 }));
 
 describe("pickNextToRefresh", () => {
@@ -57,7 +58,7 @@ describe("refreshOne", () => {
     expect(fetchFn.mock.calls[0][0]).toBe(myMasjidUrl("g-1"));
     const stored = await env.TIMES.get("mosque:duwt", "json");
     expect(stored).toMatchObject({ fetchedAt: NOW, guid: "g-1", name: "DUWT", timezone: "Europe/London" });
-    expect(stored.days.length).toBeGreaterThan(0);
+    expect(stored.days).toHaveLength(366);
     expect(stored.jumuah).toEqual(["13:00", "13:30"]);
     expect((await env.TIMES.get("refresh-state", "json")).duwt).toEqual({ ok: NOW, tried: NOW });
   });
@@ -75,8 +76,16 @@ describe("refreshOne", () => {
     expect((await env.TIMES.get("refresh-state", "json")).duwt).toEqual({ ok: NOW - 25 * H, tried: NOW });
   });
 
+  it("keeps the old copy when the timetable is only part of the year", async () => {
+    const old = { fetchedAt: 1, days: [] };
+    const env = { MOSQUES, TIMES: fakeKV({ "mosque:duwt": old }) };
+    const r = await refreshOne(env, okFetch(fixtureText()), NOW); // 13 days only
+    expect(r.ok).toBe(false);
+    expect(await env.TIMES.get("mosque:duwt", "json")).toEqual(old);
+  });
+
   it("keeps the old copy when the timetable has a malformed time", async () => {
-    const bad = JSON.parse(fixtureText());
+    const bad = fullYearMyMasjid();
     bad.model.salahTimings[3].fajr = "6am";
     const old = { fetchedAt: 1, days: [] };
     const env = { MOSQUES, TIMES: fakeKV({ "mosque:duwt": old }) };
