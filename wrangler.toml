@@ -43,9 +43,8 @@ FAJR_DEVICE = "fajr-h2cta"
 #   npx wrangler secret put VM_TOKEN     -> your Voice Monkey API token
 #   npx wrangler secret put TEST_KEY     -> any password, for the ?test=1 link
 
-# KV storage for the app API's mosque timetables. Create it once with:
-#   npx wrangler kv namespace create TIMES
-# then uncomment these lines and paste the id it prints.
-# [[kv_namespaces]]
-# binding = "TIMES"
-# id = ""
+# KV storage for the app API's mosque timetables. No id needed: on your first
+# `npx wrangler deploy`, Wrangler creates the KV namespace in your own
+# Cloudflare account automatically. Alexa works with or without it.
+[[kv_namespaces]]
+binding = "TIMES"

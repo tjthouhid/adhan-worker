@@ -316,14 +316,7 @@ Add `&days=N` for 1 to 14 days (default 7). Example response:
 
 ### Set it up (once)
 
-1. Create the KV store:
-
-   ```bash
-   npx wrangler kv namespace create TIMES
-   ```
-
-2. In `wrangler.toml`, uncomment the `[[kv_namespaces]]` lines at the bottom and paste the `id` it printed.
-3. Run `npx wrangler deploy`. Within a few minutes the cron fills in each mosque, then `/times.json?masjid=...` works.
+Nothing extra. `wrangler.toml` already has a `TIMES` KV binding without an id, so your first `npx wrangler deploy` creates the KV store in your own Cloudflare account automatically (this needs Wrangler 4.45 or later, which `npx wrangler` gives you). Within a few minutes the cron fills in each mosque, and then `/times.json?masjid=...` works.
 
 ### Add a mosque
 
