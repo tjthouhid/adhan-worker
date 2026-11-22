@@ -1,0 +1,163 @@
+{
+ "model": {
+  "masjidDetails": {
+   "name": "Test Masjid"
+  },
+  "salahTimings": [
+   {
+    "day": 24,
+    "month": 10,
+    "fajr": "06:00",
+    "shouruq": "07:30",
+    "zuhr": "12:05",
+    "asr": "14:00",
+    "maghrib": "16:00",
+    "isha": "17:40",
+    "iqamah_Fajr": "06:30"
+   },
+   {
+    "day": 25,
+    "month": 10,
+    "fajr": "06:01",
+    "shouruq": "07:30",
+    "zuhr": "12:05",
+    "asr": "14:00",
+    "maghrib": "16:01",
+    "isha": "17:40",
+    "iqamah_Fajr": "06:30"
+   },
+   {
+    "day": 26,
+    "month": 10,
+    "fajr": "06:02",
+    "shouruq": "07:30",
+    "zuhr": "12:05",
+    "asr": "14:00",
+    "maghrib": "16:02",
+    "isha": "17:40",
+    "iqamah_Fajr": "06:30"
+   },
+   {
+    "day": 22,
+    "month": 11,
+    "fajr": "06:03",
+    "shouruq": "07:30",
+    "zuhr": "12:05",
+    "asr": "14:00",
+    "maghrib": "16:03",
+    "isha": "17:40",
+    "iqamah_Fajr": "06:30"
+   },
+   {
+    "day": 27,
+    "month": 11,
+    "fajr": "06:04",
+    "shouruq": "07:30",
+    "zuhr": "12:05",
+    "asr": "14:00",
+    "maghrib": "16:04",
+    "isha": "17:40",
+    "iqamah_Fajr": "06:30"
+   },
+   {
+    "day": 28,
+    "month": 12,
+    "fajr": "06:05",
+    "shouruq": "07:30",
+    "zuhr": "12:05",
+    "asr": "14:00",
+    "maghrib": "16:05",
+    "isha": "17:40",
+    "iqamah_Fajr": "06:30"
+   },
+   {
+    "day": 29,
+    "month": 12,
+    "fajr": "06:06",
+    "shouruq": "07:30",
+    "zuhr": "12:05",
+    "asr": "14:00",
+    "maghrib": "16:06",
+    "isha": "17:40",
+    "iqamah_Fajr": "06:30"
+   },
+   {
+    "day": 30,
+    "month": 12,
+    "fajr": "06:07",
+    "shouruq": "07:30",
+    "zuhr": "12:05",
+    "asr": "14:00",
+    "maghrib": "16:07",
+    "isha": "17:40",
+    "iqamah_Fajr": "06:30"
+   },
+   {
+    "day": 31,
+    "month": 12,
+    "fajr": "06:08",
+    "shouruq": "07:30",
+    "zuhr": "12:05",
+    "asr": "14:00",
+    "maghrib": "16:08",
+    "isha": "17:40",
+    "iqamah_Fajr": "06:30"
+   },
+   {
+    "day": 1,
+    "month": 1,
+    "fajr": "06:09",
+    "shouruq": "07:30",
+    "zuhr": "12:05",
+    "asr": "14:00",
+    "maghrib": "16:09",
+    "isha": "17:40",
+    "iqamah_Fajr": "06:30"
+   },
+   {
+    "day": 2,
+    "month": 1,
+    "fajr": "06:10",
+    "shouruq": "07:30",
+    "zuhr": "12:05",
+    "asr": "14:00",
+    "maghrib": "16:10",
+    "isha": "17:40",
+    "iqamah_Fajr": "06:30"
+   },
+   {
+    "day": 3,
+    "month": 1,
+    "fajr": "06:11",
+    "shouruq": "07:30",
+    "zuhr": "12:05",
+    "asr": "14:00",
+    "maghrib": "16:11",
+    "isha": "17:40",
+    "iqamah_Fajr": "06:30"
+   },
+   {
+    "day": 28,
+    "month": 2,
+    "fajr": "06:12",
+    "shouruq": "07:30",
+    "zuhr": "12:05",
+    "asr": "14:00",
+    "maghrib": "16:12",
+    "isha": "17:40",
+    "iqamah_Fajr": "06:30"
+   }
+  ],
+  "jumahSalahIqamahTimings": [
+   {
+    "time": "13:30"
+   },
+   {
+    "time": "x"
+   },
+   {
+    "time": "13:00"
+   }
+  ]
+ }
+}
