@@ -21,6 +21,7 @@ flowchart LR
 - **Jumu'ah.** On Fridays, the Dhuhr adhan plays at the mosque's first Jumu'ah jamaah (with the mosque timetable only).
 - **Separate Fajr routine** (optional), for example a different adhan or a lower volume.
 - **Times page and test link.** Open the Worker URL to see today's times, and test the adhan whenever you want.
+- **Times API for apps** (optional). JSON prayer times for phone apps, served from your own Worker. Alexa works without setting this up. See [Times API for apps](#times-api-for-apps).
 - **Free.** Cloudflare Workers' free plan, plus about 155 of Voice Monkey's 200 free requests a month.
 
 ## Choose where your prayer times come from
@@ -137,6 +138,7 @@ Edit [`wrangler.toml`](wrangler.toml). It comes with my settings (a mosque in Da
 | `TUNE` | Minute offsets for the fallback: `Imsak,Fajr,Sunrise,Dhuhr,Asr,Maghrib,Sunset,Isha,Midnight` |
 | `DEVICE` | Your Voice Monkey trigger's Device ID, e.g. `adhan-ab12c` |
 | `FAJR_DEVICE` | *(Optional)* The Fajr trigger's Device ID. Leave empty to use `DEVICE` for all five prayers. |
+| `MOSQUES` | *(Optional, for apps only)* The mosques served by the [Times API](#times-api-for-apps). **Not needed for Alexa.** You can leave it as it is, or set it to `'[]'`. |
 
 To find your mosque's `MASJID_GUID` or your coordinates, see [Option A](#option-a-use-your-nearest-mosque) and [Option B](#option-b-use-your-own-location).
 
