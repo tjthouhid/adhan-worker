@@ -81,7 +81,7 @@ export function buildMosqueDays(stored, tz, start, n) {
       date: ymd(date),
       weekday: wd,
       fajr: at(row.fajr),
-      sunrise: null,
+      sunrise: row.sunrise ? at(row.sunrise) : null,
       dhuhr: at(row.dhuhr),
       asr: at(row.asr),
       maghrib: at(row.maghrib),

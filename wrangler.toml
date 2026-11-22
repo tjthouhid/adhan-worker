@@ -30,6 +30,10 @@ LAT_ADJ = "3"
 # Matched to DUWT (duwt.org) begin times on 20-11-2026
 TUNE = "0,-6,0,5,0,4,0,7,0"
 
+# Mosques served to apps by /mosques.json and /times.json (a JSON array).
+# id: short name used in app URLs. guid: the mosque's my-masjid.com ID (never shown to apps).
+MOSQUES = '[{"id":"duwt","name":"Dagenham Ummah Welfare Trust","city":"Dagenham","guid":"7a036d31-b4ac-44f6-a68e-2dbb1f7a7994","timezone":"Europe/London"}]'
+
 # Your Voice Monkey Routine Trigger device ID (from the Voice Monkey console)
 DEVICE = "adhan-4wkbn"
 # Optional: a separate trigger for Fajr. Leave empty to use DEVICE for all 5.
@@ -38,3 +42,10 @@ FAJR_DEVICE = "fajr-h2cta"
 # Secrets (set with wrangler, NOT here):
 #   npx wrangler secret put VM_TOKEN     -> your Voice Monkey API token
 #   npx wrangler secret put TEST_KEY     -> any password, for the ?test=1 link
+
+# KV storage for the app API's mosque timetables. Create it once with:
+#   npx wrangler kv namespace create TIMES
+# then uncomment these lines and paste the id it prints.
+# [[kv_namespaces]]
+# binding = "TIMES"
+# id = ""

@@ -3,6 +3,8 @@
 // or the Aladhan API as a fallback), and when it's prayer time, fire your
 // Voice Monkey Routine Trigger, which runs the Alexa routine that plays the adhan.
 
+import { refreshOne, myMasjidUrl } from "./refresh.js";
+
 const PRAYERS = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
 
 // In-memory cache (survives while the Worker instance stays warm)
@@ -33,8 +35,7 @@ function nowInZone(tz) {
 
 // Mosque's own timetable (my-masjid.com): whole year, local clock times
 async function getMosqueTimings(env, date, isFriday) {
-  const url = `https://time.my-masjid.com/api/TimingsInfoScreen/GetMasjidTimings?GuidId=${env.MASJID_GUID}`;
-  const res = await fetch(url, { cf: { cacheTtl: 21600, cacheEverything: true } });
+  const res = await fetch(myMasjidUrl(env.MASJID_GUID), { cf: { cacheTtl: 21600, cacheEverything: true } });
   if (!res.ok) throw new Error(`my-masjid API error ${res.status}`);
   const json = await res.json();
 
@@ -115,6 +116,14 @@ async function triggerMonkey(env, device) {
 export default {
   // Runs every minute (cron in wrangler.toml)
   async scheduled(event, env, ctx) {
+    // App API: refresh at most one listed mosque into KV. Runs alongside the
+    // Alexa check below, so a refresh failure can never block the adhan.
+    if (env.TIMES) {
+      ctx.waitUntil(
+        refreshOne(env, fetch, Date.now()).catch((err) => console.log(`Refresh error: ${err.message}`))
+      );
+    }
+
     const { date, hhmm, isFriday } = nowInZone(env.TIMEZONE);
     const timings = await getTimings(env, date, isFriday);
 

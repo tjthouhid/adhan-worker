@@ -11,6 +11,7 @@ export function trimTimetable(json) {
       month: r.month,
       day: r.day,
       fajr: r.fajr,
+      sunrise: HHMM.test(r.shouruq ?? "") ? r.shouruq : null,
       dhuhr: r.zuhr,
       asr: r.asr,
       maghrib: r.maghrib,

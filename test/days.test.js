@@ -39,16 +39,22 @@ describe("buildMosqueDays", () => {
     expect(days[2].fajr.endsWith("+00:00")).toBe(true);
   });
 
-  it("returns the day shape with weekday and null sunrise", () => {
+  it("returns the day shape with weekday and sunrise", () => {
     const [d] = buildMosqueDays(stored(), TZ, { y: 2026, m: 11, d: 22 }, 1);
     expect(d).toMatchObject({
       date: "2026-11-22",
       weekday: "Sun",
-      sunrise: null,
+      sunrise: "2026-11-22T07:30:00+00:00",
       dhuhr: "2026-11-22T12:05:00+00:00",
       jumuah: null,
     });
     expect("estimated" in d).toBe(false);
+  });
+
+  it("keeps sunrise null when the stored day has none", () => {
+    const s = stored();
+    s.days.forEach((r) => (r.sunrise = null));
+    expect(buildMosqueDays(s, TZ, { y: 2026, m: 11, d: 22 }, 1)[0].sunrise).toBeNull();
   });
 
   it("sets Jumu'ah on Fridays to the earliest time", () => {

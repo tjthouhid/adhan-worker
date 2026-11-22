@@ -60,7 +60,7 @@ The app needs prayer times from somewhere. If every phone called my-masjid.com d
 `MOSQUES` in `[vars]` in `wrangler.toml`, a JSON array:
 
 ```toml
-MOSQUES = '[{"id":"duwt","name":"Dagenham United Welfare Trust","city":"Dagenham","guid":"7a036d31-b4ac-44f6-a68e-2dbb1f7a7994","timezone":"Europe/London"}]'
+MOSQUES = '[{"id":"duwt","name":"Dagenham Ummah Welfare Trust","city":"Dagenham","guid":"7a036d31-b4ac-44f6-a68e-2dbb1f7a7994","timezone":"Europe/London"}]'
 ```
 
 - `id` is a short slug used in URLs. The GUID is never accepted from a request.
@@ -86,7 +86,7 @@ MOSQUES = '[{"id":"duwt","name":"Dagenham United Welfare Trust","city":"Dagenham
 ### `GET /mosques.json`
 
 ```json
-{ "mosques": [ { "id": "duwt", "name": "Dagenham United Welfare Trust", "city": "Dagenham", "timezone": "Europe/London" } ] }
+{ "mosques": [ { "id": "duwt", "name": "Dagenham Ummah Welfare Trust", "city": "Dagenham", "timezone": "Europe/London" } ] }
 ```
 
 No GUIDs. Cached at the edge for 1 hour.
@@ -111,7 +111,7 @@ Response:
 ```json
 {
   "source": "mosque",
-  "mosque": { "id": "duwt", "name": "Dagenham United Welfare Trust" },
+  "mosque": { "id": "duwt", "name": "Dagenham Ummah Welfare Trust" },
   "location": null,
   "timezone": "Europe/London",
   "generatedAt": "2026-11-22T10:00:00Z",
@@ -133,7 +133,7 @@ Response:
 
 - Every time is a full ISO 8601 timestamp **with the UTC offset for that date**, so the app never has to work out BST or GMT itself and clock changes inside the 7 days are handled correctly.
 - `jumuah` is set only on Fridays, and only for mosque sources: the earliest valid Jumu'ah time. `dhuhr` stays the normal Dhuhr time. The app decides which one to ring.
-- `sunrise` is filled for Aladhan sources and is `null` for mosques unless my-masjid provides it *(builder's call if it does)*.
+- `sunrise` is filled for Aladhan sources, and for mosques from my-masjid's `shouruq` field (`null` if a day lacks it).
 - `days` starts at "today" in the source's timezone.
 - For location sources, `location` is `{ "lat": 51.54, "lng": 0.15, "method": 15, "school": 1 }` and `timezone` comes from Aladhan's `meta.timezone`.
 

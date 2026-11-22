@@ -9,7 +9,7 @@ describe("trimTimetable", () => {
   it("keeps only the fields we use and maps zuhr to dhuhr", () => {
     const t = trimTimetable(fixture());
     expect(t.days[0]).toEqual({
-      month: 10, day: 24, fajr: "06:00", dhuhr: "12:05", asr: "14:00", maghrib: "16:00", isha: "17:40",
+      month: 10, day: 24, fajr: "06:00", sunrise: "07:30", dhuhr: "12:05", asr: "14:00", maghrib: "16:00", isha: "17:40",
     });
     expect(t.days).toHaveLength(13);
   });
@@ -28,6 +28,15 @@ describe("trimTimetable", () => {
     const f = fixture();
     f.model.salahTimings[5].isha = "";
     expect(() => trimTimetable(f)).toThrow("Bad timetable");
+  });
+
+  it("stores sunrise as null when shouruq is missing or malformed", () => {
+    const f = fixture();
+    delete f.model.salahTimings[0].shouruq;
+    f.model.salahTimings[1].shouruq = "--";
+    const t = trimTimetable(f);
+    expect(t.days[0].sunrise).toBeNull();
+    expect(t.days[1].sunrise).toBeNull();
   });
 
   it("rejects an empty or missing timetable", () => {
