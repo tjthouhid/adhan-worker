@@ -2,6 +2,8 @@
 
 Play the adhan on your Amazon Echo at every prayer time, automatically, using your own mosque's timetable. No server to run, no hardware, and it fits inside free plans.
 
+![How it works: your mosque's timetable, a Cloudflare Worker that checks every minute, Voice Monkey triggers your Alexa routine, and your Echo plays the adhan](docs/how-it-works.png)
+
 ```mermaid
 flowchart LR
     CRON["⏰ Cloudflare cron<br/>every minute"] --> W["☁️ Cloudflare Worker"]
