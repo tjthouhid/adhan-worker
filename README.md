@@ -21,6 +21,50 @@ flowchart LR
 - **Times page and test link.** Open the Worker URL to see today's times, and test the adhan whenever you want.
 - **Free.** Cloudflare Workers' free plan, plus about 155 of Voice Monkey's 200 free requests a month.
 
+## Choose where your prayer times come from
+
+You pick one of two options. You can switch at any time by editing [`wrangler.toml`](wrangler.toml) and running `npx wrangler deploy` again.
+
+| | Option A: your nearest mosque (recommended) | Option B: your own location |
+|---|---|---|
+| **Times match** | Your mosque's printed timetable, to the minute | A calculation for your exact location |
+| **Jumu'ah** | Yes, at the mosque's first jamaah | No, Dhuhr plays at normal Dhuhr time |
+| **Works if** | Your mosque uses [my-masjid.com](https://my-masjid.com) (many UK mosques do, it powers their TV screens) | Anywhere in the world |
+| **What to set** | `MASJID_GUID` | `LATITUDE`, `LONGITUDE`, `TIMEZONE`, `METHOD`, `SCHOOL` |
+
+Even with Option A, set your location too. If the mosque timetable is ever unreachable, the Worker falls back to Option B for that day.
+
+### Option A: use your nearest mosque
+
+1. Go to [my-masjid.com](https://my-masjid.com) and search for your mosque.
+2. Open its timing screen. The link contains a long code like `7a036d31-b4ac-44f6-a68e-2dbb1f7a7994`. That's the `MASJID_GUID`.
+3. Check it: open `https://time.my-masjid.com/api/TimingsInfoScreen/GetMasjidTimings?GuidId=YOUR_GUID` in a browser. You should see your mosque's name.
+4. In `wrangler.toml`, set `MASJID_GUID = "YOUR_GUID"`.
+
+Not on my-masjid? Ask your mosque which service runs their prayer-time screen, or use Option B and match their timetable with `TUNE` (see below).
+
+### Option B: use your own location
+
+This uses the free [Aladhan API](https://aladhan.com/prayer-times-api) (`api.aladhan.com/v1/timings`). No account or key is needed.
+
+1. Find your latitude and longitude: in [Google Maps](https://maps.google.com), right-click your home and click the numbers at the top of the menu to copy them, for example `51.5406, 0.1475`.
+2. Find your timezone name, for example `Europe/London`, `Europe/Paris` or `America/New_York` ([full list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)).
+3. In `wrangler.toml`:
+
+   ```toml
+   MASJID_GUID = ""          # empty = use your location only
+   LATITUDE = "51.5406"
+   LONGITUDE = "0.1475"
+   TIMEZONE = "Europe/London"
+   METHOD = "15"             # 15 Moonsighting Committee (common in UK)
+   SCHOOL = "1"              # 1 Hanafi Asr, 0 Shafi'i
+   TUNE = "0,0,0,0,0,0,0,0,0"
+   ```
+
+4. *(Optional)* Match a local mosque's timetable with `TUNE`. Compare a week of the Worker's times page with the mosque's timetable, and add or take away minutes. The order is `Imsak,Fajr,Sunrise,Dhuhr,Asr,Maghrib,Sunset,Isha,Midnight`. For example, if Fajr is 6 minutes late and Isha is 7 minutes early, use `"0,-6,0,0,0,0,0,7,0"`.
+
+Not sure which `METHOD` to use? Ask your mosque, or see the [list of methods](https://aladhan.com/calculation-methods).
+
 ## What you need
 
 - An Amazon Echo and the Alexa app
@@ -79,7 +123,7 @@ If you use a different adhan skill, use one of the phrases on its page in the Al
 
 ### 4. Configure
 
-Edit [`wrangler.toml`](wrangler.toml):
+Edit [`wrangler.toml`](wrangler.toml). It comes with my settings (a mosque in Dagenham, London, and my Voice Monkey devices). **Replace them with yours**, at least `DEVICE`, `FAJR_DEVICE` and your time source from [Choose where your prayer times come from](#choose-where-your-prayer-times-come-from).
 
 | Variable | What to set |
 |---|---|
@@ -92,15 +136,7 @@ Edit [`wrangler.toml`](wrangler.toml):
 | `DEVICE` | Your Voice Monkey trigger's Device ID, e.g. `adhan-ab12c` |
 | `FAJR_DEVICE` | *(Optional)* The Fajr trigger's Device ID. Leave empty to use `DEVICE` for all five prayers. |
 
-#### Finding your mosque's `MASJID_GUID`
-
-Many mosques' prayer-time screens and websites use [my-masjid.com](https://my-masjid.com). Find your mosque there and open its timing screen. The ID is the long `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` code in the link. To check it, open this in a browser:
-
-```
-https://time.my-masjid.com/api/TimingsInfoScreen/GetMasjidTimings?GuidId=YOUR_GUID
-```
-
-You should see your mosque's name and a year of `salahTimings`.
+To find your mosque's `MASJID_GUID` or your coordinates, see [Option A](#option-a-use-your-nearest-mosque) and [Option B](#option-b-use-your-own-location).
 
 ### 5. Deploy
 
@@ -222,6 +258,10 @@ adhan-worker/
 ├── README.md
 └── LICENSE
 ```
+
+## No Echo?
+
+An iPhone version is planned: an iOS Shortcut that sends a free notification at each prayer time, using the same mosque or location options. [Open an issue](https://github.com/tjthouhid/adhan-worker/issues) if you'd like it.
 
 ## License
 
