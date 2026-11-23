@@ -11,6 +11,7 @@ describe("trimTimetable", () => {
     const t = trimTimetable(fixture());
     expect(t.days[0]).toEqual({
       month: 10, day: 24, fajr: "06:00", sunrise: "07:30", dhuhr: "12:05", asr: "14:00", maghrib: "16:00", isha: "17:40",
+      jamaat: { fajr: "06:30", dhuhr: null, asr: null, maghrib: null, isha: null },
     });
     expect(t.days).toHaveLength(13);
   });
@@ -50,6 +51,13 @@ describe("trimTimetable", () => {
     const f = fixture();
     f.model.jumahSalahIqamahTimings = [{ time: "24:00" }, { time: "13:15" }];
     expect(trimTimetable(f).jumuah).toEqual(["13:15"]);
+  });
+
+  it("keeps valid iqamah (jamaat) times and nulls bad ones without rejecting the day", () => {
+    const f = fixture();
+    Object.assign(f.model.salahTimings[0], { iqamah_Zuhr: "13:15", iqamah_Asr: "", iqamah_Maghrib: "16:05", iqamah_Isha: "25:00" });
+    const j = trimTimetable(f).days[0].jamaat;
+    expect(j).toEqual({ fajr: "06:30", dhuhr: "13:15", asr: null, maghrib: "16:05", isha: null });
   });
 
   it("rejects an empty or missing timetable", () => {

@@ -87,6 +87,10 @@ export function buildMosqueDays(stored, tz, start, n) {
       maghrib: at(row.maghrib),
       isha: at(row.isha),
       jumuah: wd === "Fri" && stored.jumuah?.length ? at(stored.jumuah[0]) : null,
+      // Copies stored before jamaat existed have none: null rather than a guess.
+      jamaat: row.jamaat
+        ? Object.fromEntries(["fajr", "dhuhr", "asr", "maghrib", "isha"].map((p) => [p, row.jamaat[p] ? at(row.jamaat[p]) : null]))
+        : null,
       ...(estimated ? { estimated: true } : {}),
     });
   }

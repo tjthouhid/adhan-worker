@@ -32,6 +32,9 @@ export function trimTimetable(json) {
       Number.isInteger(day.day) &&
       ["fajr", "dhuhr", "asr", "maghrib", "isha"].every((k) => HHMM.test(day[k] ?? ""));
     if (!ok) throw new Error(`Bad timetable: ${r.day}/${r.month}`);
+    // Jamaat (iqamah) times are optional: a bad or missing one becomes null, never a rejection.
+    const iq = (t) => (HHMM.test(t ?? "") ? t : null);
+    day.jamaat = { fajr: iq(r.iqamah_Fajr), dhuhr: iq(r.iqamah_Zuhr), asr: iq(r.iqamah_Asr), maghrib: iq(r.iqamah_Maghrib), isha: iq(r.iqamah_Isha) };
     return day;
   });
 

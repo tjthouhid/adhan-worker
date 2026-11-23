@@ -311,6 +311,7 @@ Add `&days=N` for 1 to 14 days (default 7). Example response:
 
 - Every time includes its UTC offset, so BST and GMT are already handled.
 - On Fridays, mosque sources also give `jumuah`, the first Jumu'ah jamaah. `dhuhr` stays the normal Dhuhr time.
+- Mosque sources also give `jamaat`, the mosque's iqamah (congregation) times: `{ "fajr": "…", "dhuhr": "…", … }`, each in the same ISO format, with `null` for any prayer the mosque doesn't publish. Location sources give `jamaat: null`.
 - Days after 31 December reuse this year's timetable until my-masjid publishes the new year, and are marked `"estimated": true`.
 - Errors return JSON, for example `{"error": "timetable not ready"}` (503) in the first minutes after adding a mosque.
 

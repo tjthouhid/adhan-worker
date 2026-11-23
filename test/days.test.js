@@ -51,6 +51,20 @@ describe("buildMosqueDays", () => {
     expect("estimated" in d).toBe(false);
   });
 
+  it("adds jamaat times with each day's offset, null where unknown", () => {
+    const s = stored();
+    s.days.find((r) => r.month === 11 && r.day === 22).jamaat = { fajr: "06:30", dhuhr: "13:15", asr: null, maghrib: null, isha: null };
+    const [d] = buildMosqueDays(s, TZ, { y: 2026, m: 11, d: 22 }, 1);
+    expect(d.jamaat).toEqual({ fajr: "2026-11-22T06:30:00+00:00", dhuhr: "2026-11-22T13:15:00+00:00", asr: null, maghrib: null, isha: null });
+  });
+
+  it("gives jamaat null for stored copies made before jamaat existed", () => {
+    const s = stored();
+    s.days.forEach((r) => delete r.jamaat);
+    const [d] = buildMosqueDays(s, TZ, { y: 2026, m: 11, d: 22 }, 1);
+    expect(d.jamaat).toBeNull();
+  });
+
   it("keeps sunrise null when the stored day has none", () => {
     const s = stored();
     s.days.forEach((r) => (r.sunrise = null));
